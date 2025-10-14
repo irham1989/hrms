@@ -193,6 +193,7 @@
 @yield('jsExtensions')
 
 @yield('jsCustom')
+@stack('scripts')
 <!--end::Javascript-->
 </body>
 <!--end::Body-->

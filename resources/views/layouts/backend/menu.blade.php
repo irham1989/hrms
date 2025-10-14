@@ -57,7 +57,7 @@
 </div>
 @endrole
 
-                    @role('admin')
+                     @role('admin')
                         <div class="menu-item pt-5">
                             <div class="menu-content">
                                 <span class="menu-heading fw-bold text-uppercase fs-7">Profil</span>
@@ -95,7 +95,7 @@
                                 <span class="menu-title">Pengesahan Cuti</span>
                             </a>
                         </div>
-                    @endrole
+                    @endrole 
                     @role('staff|ketua_unit|penolong_pengarah|ketua_pengarah')
                         <div class="menu-item pt-5">
                             <div class="menu-content">
@@ -124,7 +124,7 @@
                                 </span>
                                 <span class="menu-title">Tetapan Kata Laluan</span>
                             </a>
-                        </div>
+                        </div> 
                         @php
                             $showCuti = false;
                             $user = Auth::user();
@@ -143,7 +143,7 @@
 
                         @if($showCuti)
                             @if(Auth::user()->getStaff->getStaffPosition->getStaffLeave->leave_total != null)
-                                <div class="menu-item pt-5">
+                                 <div class="menu-item pt-5">
                                     <!--begin:Menu content-->
                                     <div class="menu-content">
                                         <span class="menu-heading fw-bold text-uppercase fs-7">Cuti</span>
@@ -172,7 +172,7 @@
                                             </span>
                                         <span class="menu-title">Permohonan Cuti</span>
                                     </a>
-                                </div>
+                                </div> 
                             @endif
                         @endif
                     @endrole
@@ -302,7 +302,7 @@
                             </span>
                             <span class="menu-title">Sejarah Jawatan</span>
                         </a>
-                    </div>
+                    </div>  
                     @endrole
                     @role('approval-admin')
                         <div class="menu-item pt-5">

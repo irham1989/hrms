@@ -9,10 +9,12 @@ use App\Repositories\AdminUserRepository;
 use App\Traits\CommonTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;   // ⬅️ TAMBAH: untuk whereIn + LOWER()
 
 class AdminUserController extends Controller
 {
     use CommonTrait;
+
     private AdminUserRepository $adminUserRepository;
 
     public function __construct(AdminUserRepository $adminUserRepository){
@@ -21,18 +23,46 @@ class AdminUserController extends Controller
 
     public function index(Request $request){
         $session_id = $request->session_id;
-        $user = Auth::user();
+        $user       = Auth::user();
 
-        $rolesDrop = [];
-        if($user->hasRole('super-admin')){
-            $rolesDrop = [2, 4, 5, 6, 7];
-        }else if($user->hasRole('admin')){
-            $rolesDrop = [4, 5, 6, 7];
+        // Tentukan role yang boleh dipilih ikut peranan pengguna yang login
+        // super-admin → boleh lihat semua termasuk admin
+        // admin       → tidak boleh lihat super-admin / admin
+        $allowedRoleNames = [];
+
+        if ($user && $user->hasRole('super-admin')) {
+            $allowedRoleNames = [
+                'admin',
+                'staff',
+                'approval-admin',
+                'ketua_unit',
+                'penolong_pengarah',
+                'ketua_pengarah',
+            ];
+        } elseif ($user && $user->hasRole('admin')) {
+            $allowedRoleNames = [
+                'staff',
+                'approval-admin',
+                'ketua_unit',
+                'penolong_pengarah',
+                'ketua_pengarah',
+            ];
+        } else {
+            // Jika bukan admin/super-admin, anda boleh abort(403) atau biarkan kosong
+            // return abort(403);
+            $allowedRoleNames = [];
         }
-        $roles = Role::whereIn('id', $rolesDrop)->get();
+
+        // Query secara case-insensitive ikut NAMA role (bukan ID)
+        $roles = empty($allowedRoleNames)
+            ? collect()
+            : Role::whereIn(DB::raw('LOWER(name)'), array_map('strtolower', $allowedRoleNames))
+                ->orderBy('name')
+                ->get();
+
         return view('admin.user.list', [
-            'roles' => $roles,
-            'session_id' => $session_id
+            'roles'      => $roles,
+            'session_id' => $session_id,
         ]);
     }
 

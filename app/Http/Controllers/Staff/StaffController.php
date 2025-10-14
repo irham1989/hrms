@@ -39,7 +39,25 @@ class StaffController extends Controller
     }
     public function index($user_id, $page, Request $request)
 {
+    // Ambil profil staff (mungkin null untuk admin / user yg belum ada rekod staff)
     $staff = $this->staffRepository->getStaffProfile($user_id);
+
+    // Fallback: bina objek ringan supaya view sentiasa ada $staff->getUser
+    if (!$staff) {
+        $user = User::findOrFail($user_id);
+
+        $s = new \stdClass();
+        $s->id                = null;          // tiada rekod staff
+        $s->user_id           = $user->id;
+        $s->getUser           = $user;         // view guna ->getUser->name & ->hasRole()
+        $s->getStaffPosition  = null;          // biar null; blok itu tak dirender utk admin
+        $s->work_status       = 0;
+        $s->dob               = null;
+        $s->profile_complete  = 0;
+        $s->academic_complete = 0;
+
+        $staff = $s;
+    }
 
     $responseData = [
         'page'    => $page,
@@ -47,14 +65,22 @@ class StaffController extends Controller
         'staff'   => $staff,
     ];
 
-    if ($page == 'main') {
-        // Paparan ringkas (atas sahaja)
-        $checkPositionRecord = $this->staffPositionRepository->checkExistRecord($staff->id);
-        $this->staffLeaveRepository->checkExistRecord($checkPositionRecord->id);
-        $responseData['staff'] = $this->staffRepository->getStaffProfile($user_id);
-        // TIADA lookup di sini supaya bahagian bawah tidak dirender
+    // ========== Paparan ringkas (atas sahaja) ==========
+    if ($page === 'main') {
+        // Hanya jalankan bila staff memang wujud (ada id)
+        if (!empty($staff->id)) {
+            $checkPositionRecord = $this->staffPositionRepository->checkExistRecord($staff->id);
+            if ($checkPositionRecord) {
+                $this->staffLeaveRepository->checkExistRecord($checkPositionRecord->id);
+            }
+            // Refresh data staff selepas jaminan wujud
+            $responseData['staff'] = $this->staffRepository->getStaffProfile($user_id);
+        }
+        // TIADA lookup lain di sini supaya bahagian bawah view tidak dipaparkan
     }
-    elseif ($page == 'profile') { // Rekod Peribadi (borang penuh)
+
+    // ========== Rekod Peribadi (borang penuh) ==========
+    elseif ($page === 'profile') {
         $responseData['country']        = $this->getCountries();
         $responseData['state']          = $this->getStates();
         $responseData['race']           = $this->getRaces();
@@ -64,19 +90,26 @@ class StaffController extends Controller
         $responseData['salutation']     = $this->getSalutations();
         $responseData['gender']         = $this->getGenders();
     }
-    elseif ($page == 'academic') {
+
+    // ========== Akademik ==========
+    elseif ($page === 'academic') {
         $responseData['academic_qualifications'] = $this->getAcademicQualifications();
     }
-    elseif ($page == 'position') {
+
+    // ========== Tetapan Jawatan ==========
+    elseif ($page === 'position') {
         $responseData['state_select']  = $request->state_select ?? null;
         $responseData['branch_select'] = $request->branch_select ?? null;
+
         if ($request->branch_select) {
             $responseData['branch_record'] = $this->branchRepository->getBranch($request->branch_select);
         }
+
         $responseData['state'] = $this->getStates();
     }
 
     return view('staff.profile.index')->with($responseData);
+
 }
 
     public function storeUpdateMain(Request $request){
