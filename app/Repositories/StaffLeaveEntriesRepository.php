@@ -239,9 +239,20 @@ class StaffLeaveEntriesRepository
         DB::beginTransaction();
         try{
             $entry = $this->getStaffLeaveEntry($id);
+
+            $leaveCategory = $entry->leave_category_id;
+
             $sLeave = $entry->getStaffLeave;
-            $sLeave->leave_balance = $sLeave->leave_balance + $entry->days;
-            $sLeave->leave_taken = $sLeave->leave_taken - $entry->days;
+
+            //cuti sakit
+            if($leaveCategory == 3){
+                $sLeave->mc_balance = $sLeave->mc_balance + $entry->days;
+                $sLeave->mc_taken = $sLeave->mc_taken - $entry->days;
+            }else{
+                $sLeave->leave_balance = $sLeave->leave_balance + $entry->days;
+                $sLeave->leave_taken = $sLeave->leave_taken - $entry->days;
+            }
+           
             $sLeave->save();
             DB::commit();
             return true;
@@ -409,5 +420,3 @@ class StaffLeaveEntriesRepository
         die();
     }
 }
-
-

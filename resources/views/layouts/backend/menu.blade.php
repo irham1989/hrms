@@ -229,6 +229,19 @@
                             <span class="menu-title">Senarai Pengguna</span>
                         </a>
                     </div>
+                    @role('super-admin|admin')
+              
+
+                    <div class="menu-item">
+                    <a class="menu-link {{ request()->routeIs('admin.staff.stats') ? 'active' : '' }}"
+                    href="{{ route('admin.staff.stats') }}">
+                    <span class="menu-icon">
+                    <i class="ki-duotone ki-chart-simple fs-2"><span class="path1"></span><span class="path2"></span></i>
+                    </span>
+                    <span class="menu-title">Maklumat Kakitangan</span>
+                    </a>
+                    </div>
+                    @endrole
                     <div class="menu-item pt-5">
                         <!--begin:Menu content-->
                         <div class="menu-content">
