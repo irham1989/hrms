@@ -46,8 +46,9 @@ Route::middleware(['auth'])
             | TIP: boleh tambah middleware role jika perlu
             | ->middleware('role:admin|super-admin')
             */
-            Route::get('/staff-stats', [StaffStatsController::class, 'index'])
-                ->name('staff.stats');
+            Route::get('/staff-stats', [StaffStatsController::class, 'index'])->name('staff.stats');
+            Route::get('/staff-stats/filter', [StaffStatsController::class, 'filterStaff'])->name('staff.stats.filter');
+
 
             /*
             |------------------------
